@@ -10,6 +10,9 @@ namespace ImageResizer
     {
         static void Main(string[] args)
         {
+            string date = DateTime.Now.ToString();
+            Console.WriteLine($"today: {date}");
+            Console.ReadKey();
         }
     }
 
