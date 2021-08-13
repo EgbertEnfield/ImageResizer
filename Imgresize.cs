@@ -6,10 +6,25 @@ using System.Threading.Tasks;
 
 namespace ImageResizer
 {
-    class Program
+    class Imgresize
     {
         static void Main(string[] args)
         {
         }
+    }
+
+    class JsonSerializer
+    {
+
+    }
+
+    class ArgumentAnalyzer
+    {
+
+    }
+
+    class Params
+    {
+
     }
 }
