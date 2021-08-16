@@ -119,6 +119,5 @@ namespace ImageResizer
     [DataContract]
     class JsonOptions
     {
-       
     }
 }
