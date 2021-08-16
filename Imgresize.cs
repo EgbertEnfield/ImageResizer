@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
+using System.Windows.Forms;
 using CommandLine;
 using CommandLine.Text;
 
@@ -14,30 +16,58 @@ namespace ImageResizer
     {
         private static void Main(string[] args)
         {
-            OptionAnalyzer.AnalyzeArguments(args);
+            ArgumentValue argValue = OptionAnalyzer.AnalyzeArguments(args);
+            Console.WriteLine($"{argValue.InputPath}, {argValue.OutputPath}, {argValue.Ratio}, {argValue.JsonPath}");
+            Console.ReadLine();
+        }
+
+        private static Bitmap LoadPictureFromClipboad()
+        {
+            if (Clipboard.ContainsImage())
+            {
+                // get image
+                return null;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 
     public class OptionAnalyzer
     {
-        public static void AnalyzeArguments(string[] args)
+        /// <summary>
+        /// プログラムの引数を解析し、不適ならばヘルプを表示する。
+        /// </summary>
+        /// <param name="arguments">起動時のプログラムの引数</param>
+        /// <returns>値が入ったArgumentValueのインスタンス</returns>
+        public static ArgumentValue AnalyzeArguments(string[] arguments)
         {
-            using (var parser = new Parser((setting) => setting.HelpWriter = null))
+            Options options;
+            var result = (ParserResult<Options>)Parser.Default.ParseArguments<Options>(arguments);
+            if (result.Tag == ParserResultType.Parsed)
             {
-                var parsed = parser.ParseArguments<Options>(args);
-                parsed.WithParsed(suceeded =>
+                var parsed = (Parsed<Options>)result;
+                options = parsed.Value;
+                var argValues = new ArgumentValue()
                 {
-                    Console.WriteLine("succeeded");
-                });
-                parsed.WithNotParsed(failed =>
-                {
-                    var helpText = HelpText.AutoBuild(parsed);
-                    helpText.AddPostOptionsLine("You can specify \"clipboad\" at \"source\" and \"dest\"");
-                    helpText.AddPostOptionsLine("Application will load from clipboad and outputs picture specified path or on clipboad");
-                    Console.WriteLine(helpText);
-                });
+                    InputPath = options.InputPath,
+                    OutputPath = options.OutputPath,
+                    JsonPath = options.LoadFromJson,
+                    Ratio = options.Ratio,
+                };
+                return argValues;
             }
-            Console.ReadLine();
+            else
+            {
+                var notParsed = (NotParsed<Options>)result;
+                var helpText = HelpText.AutoBuild(notParsed);
+                helpText.AddPostOptionsLine("You can specify \"clipboad\" at \"source\" and \"dest\"");
+                helpText.AddPostOptionsLine("Application will load from clipboad and outputs picture specified path or on clipboad");
+                Console.WriteLine(helpText);
+                return new ArgumentValue();
+            }
         }
     }
 
@@ -119,5 +149,16 @@ namespace ImageResizer
     [DataContract]
     class JsonOptions
     {
+    }
+
+    public class ArgumentValue
+    {
+        public string InputPath { get; set; }
+
+        public string OutputPath { get; set; }
+
+        public string JsonPath { get; set; }
+
+        public int Ratio { get; set; }
     }
 }
