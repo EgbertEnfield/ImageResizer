@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using CommandLine;
 using CommandLine.Text;
@@ -31,8 +32,9 @@ namespace ImageResizer
                 parsed.WithNotParsed(failed =>
                 {
                     var helpText = HelpText.AutoBuild(parsed);
+                    helpText.AddPostOptionsLine("You can specify \"clipboad\" at \"source\" and \"dest\"");
+                    helpText.AddPostOptionsLine("Application will load from clipboad and outputs picture specified path or on clipboad");
                     Console.WriteLine(helpText);
-                    Console.ReadLine();
                 });
             }
             Console.ReadLine();
@@ -101,19 +103,22 @@ namespace ImageResizer
 
     class Options
     {
-        [Value(0, Required = true, HelpText = "入力先のファイル名")]
+        [Value(0, Required = true, HelpText = "Source file path")]
         public string InputPath { get; set; }
-        
-        [Value(1, Required = true, HelpText = "出力先のファイル名")]
+
+        [Value(1, Required = true, HelpText = "Destination file path")]
         public string OutputPath { get; set; }
-        
-        [Value(2, Required = true, HelpText = "画像の拡大/縮小率")]
+
+        [Value(2, Required = true, HelpText = "Ratio")]
         public int Ratio { get; set; }
-        
-        [Option('c', "clipboad", HelpText = "クリップボードから読み込む")]
-        public bool UseClipboad { get; set; }
-        
-        [Option('o', "overwrite", HelpText = "元のファイルを上書きする")]
-        public bool Overwrite { get; set; }
+
+        [Option('j', "json", HelpText = "load settings from json.")]
+        public string LoadFromJson { get; set; }
+    }
+
+    [DataContract]
+    class JsonOptions
+    {
+       
     }
 }

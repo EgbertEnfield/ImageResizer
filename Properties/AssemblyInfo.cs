@@ -37,4 +37,4 @@ using System.Runtime.InteropServices;
 
 // Attributes to show this application usage and license
 [assembly: CommandLine.Text.AssemblyLicense("\n  This application is licensed by MIT License.", "  (https://github.com/Sovietball1922/ImageResizer/blob/master/LICENSE)", "  ")]
-[assembly: CommandLine.Text.AssemblyUsage("  IMAGERESIZER source destination ratio [options...] \n")]
+[assembly: CommandLine.Text.AssemblyUsage("  IMAGERESIZER source dest ratio [-c] [-o] [-j path] \n")]
