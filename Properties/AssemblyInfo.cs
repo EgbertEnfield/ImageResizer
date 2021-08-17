@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ImageResizer")]
-[assembly: AssemblyCopyright("Copyright ©  2021  Семён Мошенко")]
+[assembly: AssemblyCopyright("Copyright ©  2021  Семён Мошенко \n")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -36,5 +36,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("1.0.1")]
 
 // Attributes to show this application usage and license
-[assembly: CommandLine.Text.AssemblyLicense("\n  This application is licensed by MIT License.", "  (https://github.com/Sovietball1922/ImageResizer/blob/master/LICENSE)", "  ")]
+[assembly: CommandLine.Text.AssemblyLicense("\n  Released under the MIT License.", "  (https://github.com/Sovietball1922/ImageResizer/blob/master/LICENSE)", "  ")]
 [assembly: CommandLine.Text.AssemblyUsage("  IMAGERESIZER source dest ratio [-c] [-o] [-j path] \n")]
