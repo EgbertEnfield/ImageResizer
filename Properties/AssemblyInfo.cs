@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ImageResizer")]
-[assembly: AssemblyCopyright("Copyright ©  2021  Семён Мошенко \n")]
+[assembly: AssemblyCopyright("Copyright ©  2021  Семён Мошенко")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

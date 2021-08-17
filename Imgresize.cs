@@ -4,11 +4,12 @@ using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Runtime;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Windows.Forms;
+using System.Threading;
 using CommandLine;
-using CommandLine.Text;
 
 namespace ImageResizer
 {
@@ -18,20 +19,16 @@ namespace ImageResizer
         {
             ArgumentValue argValue = OptionAnalyzer.AnalyzeArguments(args);
             Console.WriteLine($"{argValue.InputPath}, {argValue.OutputPath}, {argValue.Ratio}, {argValue.JsonPath}");
+            if (argValue.InputPath == "clipboad")
+            {
+                LoadPictureFromClipboad();
+            }
             Console.ReadLine();
         }
 
-        private static Bitmap LoadPictureFromClipboad()
+        private static Image LoadPictureFromClipboad()
         {
-            if (Clipboard.ContainsImage())
-            {
-                // get image
-                return null;
-            }
-            else
-            {
-                return null;
-            }
+            return null;
         }
     }
 
@@ -61,11 +58,19 @@ namespace ImageResizer
             }
             else
             {
-                var notParsed = (NotParsed<Options>)result;
-                var helpText = HelpText.AutoBuild(notParsed);
-                helpText.AddPostOptionsLine("You can specify \"clipboad\" at \"source\" and \"dest\"");
-                helpText.AddPostOptionsLine("Application will load from clipboad and outputs picture specified path or on clipboad");
-                Console.WriteLine(helpText);
+                try
+                {
+                    if (arguments[0] != "--version")
+                    {
+                        Console.WriteLine("You can specify \"clipboad\" at \"source\" and \"dest\"");
+                        Console.WriteLine("Application will load from clipboad and outputs picture specified path or on clipboad");
+                    }
+                }
+                catch (IndexOutOfRangeException ex)
+                {
+                    Console.WriteLine("Exception happend");
+                    Console.WriteLine(string.Format("{0}: No argument exists", ex.GetType().ToString()));
+                }
                 return new ArgumentValue();
             }
         }
@@ -144,6 +149,9 @@ namespace ImageResizer
 
         [Option('j', "json", HelpText = "load settings from json.")]
         public string LoadFromJson { get; set; }
+
+        [Option('s', "scaling", HelpText = "画像の補間アルゴリズム")]
+        public string Scaling { get; set; }
     }
 
     [DataContract]

@@ -8,7 +8,7 @@
             "type": "shell",
             "command": "start",
             "args": [
-                "${workspaceFolder}\\bin\\Debug\\ImageResizer.exe"
+                "${workspaceFolder}\\bin\\Debug\\imgresize.exe"
             ],
             "group": "none"
         },

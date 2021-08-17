@@ -8,7 +8,7 @@
             "name": ".NET Framework Launch (console)",
             "type": "clr",
             "request": "launch",
-            "program": "${workspaceFolder}\\bin\\Debug\\ImageResizer.exe",
+            "program": "${workspaceFolder}\\bin\\Debug\\imgresize.exe",
             "args": [],
             "preLaunchTask": "debug-build",
             "postDebugTask": "launch-app",
