@@ -13,28 +13,60 @@ using System.Threading;
 using CommandLine;
 using CommandLine.Text;
 
-namespace ImageResizer
+namespace ImageTools
 {
     class Imgresize
     {
         [STAThread]
         private static void Main(string[] args)
         {
+            Image image = null;
             ArgumentValue argValue = OptionAnalyzer.AnalyzeArguments(args);
-            Console.WriteLine($"{argValue.InputPath}, {argValue.OutputPath}, {argValue.Ratio}, {argValue.JsonPath}");
-            if (argValue.InputPath == "clipboad")
+            if (argValue.InputPath == "clipboard")
             {
-                Image image = GetClipBoardImage();
+                image = GetClipBoardImage();
                 if (image != null)
                 {
-                    Console.WriteLine("=͟͟͞͞○ヽ(･ω･`ヽ)ｷｬｯﾁ!");
-                    image.Save("C:\\Users\\stalin\\desktop\\foo.png", ImageFormat.Png);
+                    if (argValue.UsePercent == true)
+                    {
+                        double percent = argValue.Ratio * 0.01;
+                        int newWidth = (int)Math.Round((double)image.Width * percent);
+                        int newHeight = (int)Math.Round((double)image.Height * percent);
+
+                        Console.WriteLine($"{image.Width}, {image.Height}");
+                        Console.WriteLine($"{percent}, {newWidth}, {newHeight}");
+
+                        image = CreateThumbnail(image, newWidth, newHeight);
+                    }
+                    else if (argValue.UsePixel == true)
+                    {
+                        double ratio = (double)argValue.Ratio / (double)image.Width;
+                        int newWidth = (int)Math.Round((double)image.Width * ratio);
+                        int newHeight = (int)Math.Round((double)image.Height * ratio);
+
+                        image = CreateThumbnail(image, newWidth, newHeight);
+                    }
+
+                    if (argValue.OutputPath == "clipboard")
+                    {
+                        Clipboard.Clear();
+                        Clipboard.SetImage(image);
+                    }
+                    else
+                    {
+                        image.Save(argValue.OutputPath, ImageFormat.Png);
+                    }
+
                 }
+            }
+            else
+            {
+
             }
             Console.ReadLine();
         }
 
-        public static Image GetClipBoardImage()
+        static Image GetClipBoardImage()
         {
             Image image = null;
             Thread thread = new Thread(() => image = Clipboard.GetImage());
@@ -51,6 +83,28 @@ namespace ImageResizer
             }
             return image;
         }
+
+        static Image CreateThumbnail(Image image, int width, int height)
+        {
+            Bitmap canvas = new Bitmap(width, height);
+
+            Graphics g = Graphics.FromImage(canvas);
+            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+            g.FillRectangle(new SolidBrush(Color.White), 0, 0, width, height);
+
+            float fw = (float)width / (float)image.Width;
+            float fh = (float)height / (float)image.Height;
+
+            float scale = Math.Min(fw, fh);
+            fw = image.Width * scale;
+            fh = image.Height * scale;
+
+            g.DrawImage(image, (width - fw) / 2, (height - fh) / 2, fw, fh);
+            g.Dispose();
+
+            return canvas;
+        }
+
     }
 
     public class OptionAnalyzer
@@ -68,20 +122,35 @@ namespace ImageResizer
             {
                 var parsed = (Parsed<Options>)result;
                 options = parsed.Value;
-                var argValues = new ArgumentValue()
+                if (options.UsePercent == true && options.UsePixel == true)
                 {
-                    InputPath = options.InputPath,
-                    OutputPath = options.OutputPath,
-                    JsonPath = options.LoadFromJson,
-                    Ratio = options.Ratio,
-                };
-                return argValues;
+                    ShowError("-p and -x option can't be specified at same time.");
+                    return new ArgumentValue();
+                }
+                else if (options.UsePercent == false && options.UsePixel == false)
+                {
+                    ShowError("-p or -x option must be specified at same time.");
+                    return new ArgumentValue();
+                }
+                else
+                {
+                    var argValues = new ArgumentValue()
+                    {
+                        InputPath = options.InputPath,
+                        OutputPath = options.OutputPath,
+                        JsonPath = options.LoadFromJson,
+                        Ratio = options.Ratio,
+                        UsePercent = options.UsePercent,
+                        UsePixel = options.UsePixel
+                    };
+                    return argValues;
+                }
             }
             else
             {
                 try
                 {
-                    if (arguments[0] != "--version")
+                    if (arguments[0] != "--version" || arguments[0] == "-?")
                     {
                         Console.WriteLine("You can specify \"clipboad\" at \"source\" and \"dest\"");
                         Console.WriteLine("Application will load from clipboad and outputs picture specified path or on clipboad");
@@ -173,10 +242,10 @@ namespace ImageResizer
 
     class Options
     {
-        [Value(0, Required = true, HelpText = "Source file path")]
+        [Value(0, Default = "clipboard", Required = true, HelpText = "Source file path")]
         public string InputPath { get; set; }
 
-        [Value(1, Required = true, HelpText = "Destination file path")]
+        [Value(1, Default = "clipboard", Required = true, HelpText = "Destination file path")]
         public string OutputPath { get; set; }
 
         [Value(2, Required = true, HelpText = "Ratio")]
@@ -185,8 +254,11 @@ namespace ImageResizer
         [Option('j', "json", HelpText = "load settings from json.")]
         public string LoadFromJson { get; set; }
 
-        [Option('s', "scaling", HelpText = "画像の補間アルゴリズム")]
-        public string Scaling { get; set; }
+        [Option('p', "percent", HelpText = "Use percentage to ratio")]
+        public bool UsePercent { get; set; }
+
+        [Option('x', "pixel", HelpText = "Use pixel to ratio")]
+        public bool UsePixel { get; set; }
     }
 
     [DataContract]
@@ -203,5 +275,9 @@ namespace ImageResizer
         public string JsonPath { get; set; }
 
         public int Ratio { get; set; }
+
+        public bool UsePercent { get; set; }
+
+        public bool UsePixel { get; set; }
     }
 }

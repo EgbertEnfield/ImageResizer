@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{3EBAD68A-2BEC-484F-9FAC-B9E3E8EB129A}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>ImageResizer</RootNamespace>
+    <RootNamespace>ImageTools</RootNamespace>
     <AssemblyName>imgresize</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
