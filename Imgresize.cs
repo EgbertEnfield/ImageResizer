@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,25 +11,45 @@ using System.Runtime.Serialization.Json;
 using System.Windows.Forms;
 using System.Threading;
 using CommandLine;
+using CommandLine.Text;
 
 namespace ImageResizer
 {
     class Imgresize
     {
+        [STAThread]
         private static void Main(string[] args)
         {
             ArgumentValue argValue = OptionAnalyzer.AnalyzeArguments(args);
             Console.WriteLine($"{argValue.InputPath}, {argValue.OutputPath}, {argValue.Ratio}, {argValue.JsonPath}");
             if (argValue.InputPath == "clipboad")
             {
-                LoadPictureFromClipboad();
+                Image image = GetClipBoardImage();
+                if (image != null)
+                {
+                    Console.WriteLine("=͟͟͞͞○ヽ(･ω･`ヽ)ｷｬｯﾁ!");
+                    image.Save("C:\\Users\\stalin\\desktop\\foo.png", ImageFormat.Png);
+                }
             }
             Console.ReadLine();
         }
 
-        private static Image LoadPictureFromClipboad()
+        public static Image GetClipBoardImage()
         {
-            return null;
+            Image image = null;
+            Thread thread = new Thread(() => image = Clipboard.GetImage());
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+
+            if (image == null)
+            {
+                string errmsg = "No image founds on the clipboard";
+                OptionAnalyzer.ShowError(errmsg);
+                Console.ReadLine();
+                return null;
+            }
+            return image;
         }
     }
 
@@ -72,6 +93,20 @@ namespace ImageResizer
                     Console.WriteLine(string.Format("{0}: No argument exists", ex.GetType().ToString()));
                 }
                 return new ArgumentValue();
+            }
+        }
+
+        public static void ShowError(string message)
+        {
+            using (var parser = new Parser((setting) => setting.HelpWriter = null))
+            {
+                var parsed = parser.ParseArguments<Options>( new string[] { "--help" } );
+                parsed.WithNotParsed(er =>
+                {
+                    var helpText = HelpText.AutoBuild(parsed);
+                    Console.WriteLine(helpText);
+                    Console.WriteLine(message);
+                });
             }
         }
     }
