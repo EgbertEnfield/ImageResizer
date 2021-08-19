@@ -23,7 +23,7 @@ namespace ImageTools
         {
             Image image = null;
             ArgumentValue argValue = OptionAnalyzer.AnalyzeArguments(args);
-            if (argValue.InputPath == "clipboard")
+            if (argValue.InputPath[0] == "clipboard")
             {
                 image = ImageProcesser.GetClipBoardImage();
                 if (image != null)
@@ -47,22 +47,22 @@ namespace ImageTools
 
                         image = ImageProcesser.CreateThumbnail(image, newWidth, newHeight);
                     }
-
-                    if (argValue.OutputPath == "clipboard")
-                    {
-                        Clipboard.Clear();
-                        Clipboard.SetImage(image);
-                    }
-                    else
-                    {
-                        Console.WriteLine(argValue.OutputPath);
-                        image.Save(argValue.OutputPath, ImageFormat.Png);
-                    }
                 }
             }
             else
             {
+                image = Image.FromFile(argValue.InputPath[0]);
+            }
 
+            if (argValue.OutputPath[0] == "clipboard")
+            {
+                Clipboard.Clear();
+                Clipboard.SetImage(image);
+            }
+            else
+            {
+                Console.WriteLine(argValue.OutputPath);
+                image.Save(argValue.OutputPath[0], ImageFormat.Png);
             }
             Console.ReadLine();
         }
@@ -258,13 +258,13 @@ namespace ImageTools
 
     class Options
     {
-        [Value(0, Default = "clipboard", Required = true, HelpText = "Source file path")]
-        public string InputPath { get; set; }
+        [Option('i', "input", Default = "clipboard", Required = true, HelpText = "Source file path")]
+        public string[] InputPath { get; set; }
 
-        [Value(1, Default = "clipboard", Required = true, HelpText = "Destination file path")]
-        public string OutputPath { get; set; }
+        [Option('o', "output", Default = "clipboard", Required = true, HelpText = "Destination file path")]
+        public string[] OutputPath { get; set; }
 
-        [Value(2, Required = true, HelpText = "Ratio")]
+        [Option('r', "ratio", Required = true, HelpText = "Ratio")]
         public int Ratio { get; set; }
 
         [Option('j', "json", HelpText = "load settings from json.")]
@@ -277,16 +277,11 @@ namespace ImageTools
         public bool UsePixel { get; set; }
     }
 
-    [DataContract]
-    class JsonOptions
-    {
-    }
-
     public class ArgumentValue
     {
-        public string InputPath { get; set; }
+        public string[] InputPath { get; set; }
 
-        public string OutputPath { get; set; }
+        public string[] OutputPath { get; set; }
 
         public string JsonPath { get; set; }
 
@@ -295,5 +290,10 @@ namespace ImageTools
         public bool UsePercent { get; set; }
 
         public bool UsePixel { get; set; }
+    }
+
+    [DataContract]
+    class JsonOptions
+    {
     }
 }
