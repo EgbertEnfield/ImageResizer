@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Runtime;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
@@ -24,7 +25,7 @@ namespace ImageTools
             ArgumentValue argValue = OptionAnalyzer.AnalyzeArguments(args);
             if (argValue.InputPath == "clipboard")
             {
-                image = GetClipBoardImage();
+                image = ImageProcesser.GetClipBoardImage();
                 if (image != null)
                 {
                     if (argValue.UsePercent == true)
@@ -36,7 +37,7 @@ namespace ImageTools
                         Console.WriteLine($"{image.Width}, {image.Height}");
                         Console.WriteLine($"{percent}, {newWidth}, {newHeight}");
 
-                        image = CreateThumbnail(image, newWidth, newHeight);
+                        image = ImageProcesser.CreateThumbnail(image, newWidth, newHeight);
                     }
                     else if (argValue.UsePixel == true)
                     {
@@ -44,7 +45,7 @@ namespace ImageTools
                         int newWidth = (int)Math.Round((double)image.Width * ratio);
                         int newHeight = (int)Math.Round((double)image.Height * ratio);
 
-                        image = CreateThumbnail(image, newWidth, newHeight);
+                        image = ImageProcesser.CreateThumbnail(image, newWidth, newHeight);
                     }
 
                     if (argValue.OutputPath == "clipboard")
@@ -54,9 +55,9 @@ namespace ImageTools
                     }
                     else
                     {
+                        Console.WriteLine(argValue.OutputPath);
                         image.Save(argValue.OutputPath, ImageFormat.Png);
                     }
-
                 }
             }
             else
@@ -66,45 +67,18 @@ namespace ImageTools
             Console.ReadLine();
         }
 
-        static Image GetClipBoardImage()
+        static string GetEscapedPath(string path)
         {
-            Image image = null;
-            Thread thread = new Thread(() => image = Clipboard.GetImage());
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
-
-            if (image == null)
+            if (Regex.IsMatch(path, @"^[a-zA-Z]:\\*"))
             {
-                string errmsg = "No image founds on the clipboard";
-                OptionAnalyzer.ShowError(errmsg);
-                Console.ReadLine();
-                return null;
+                Regex.Replace(path, @"\\", @"\\\\");
+                return path;
             }
-            return image;
+            else
+            {
+                return path;
+            }
         }
-
-        static Image CreateThumbnail(Image image, int width, int height)
-        {
-            Bitmap canvas = new Bitmap(width, height);
-
-            Graphics g = Graphics.FromImage(canvas);
-            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-            g.FillRectangle(new SolidBrush(Color.White), 0, 0, width, height);
-
-            float fw = (float)width / (float)image.Width;
-            float fh = (float)height / (float)image.Height;
-
-            float scale = Math.Min(fw, fh);
-            fw = image.Width * scale;
-            fh = image.Height * scale;
-
-            g.DrawImage(image, (width - fw) / 2, (height - fh) / 2, fw, fh);
-            g.Dispose();
-
-            return canvas;
-        }
-
     }
 
     public class OptionAnalyzer
@@ -237,6 +211,48 @@ namespace ImageTools
                 var serializer = new DataContractJsonSerializer(typeof(T), setting);
                 return (T)serializer.ReadObject(ms);
             }
+        }
+    }
+
+    public static class ImageProcesser
+    {
+        internal static Image GetClipBoardImage()
+        {
+            Image image = null;
+            Thread thread = new Thread(() => image = Clipboard.GetImage());
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+
+            if (image == null)
+            {
+                string errmsg = "No image founds on the clipboard";
+                OptionAnalyzer.ShowError(errmsg);
+                Console.ReadLine();
+                return null;
+            }
+            return image;
+        }
+
+        internal static Image CreateThumbnail(Image image, int width, int height)
+        {
+            Bitmap canvas = new Bitmap(width, height);
+
+            Graphics g = Graphics.FromImage(canvas);
+            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+            g.FillRectangle(new SolidBrush(Color.White), 0, 0, width, height);
+
+            float fw = (float)width / (float)image.Width;
+            float fh = (float)height / (float)image.Height;
+
+            float scale = Math.Min(fw, fh);
+            fw = image.Width * scale;
+            fh = image.Height * scale;
+
+            g.DrawImage(image, (width - fw) / 2, (height - fh) / 2, fw, fh);
+            g.Dispose();
+
+            return canvas;
         }
     }
 
