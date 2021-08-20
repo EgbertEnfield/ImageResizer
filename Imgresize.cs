@@ -23,7 +23,7 @@ namespace ImageTools
         {
             Image image = null;
             ArgumentValue argValue = OptionAnalyzer.AnalyzeArguments(args);
-            if (argValue.InputPath[0] == "clipboard")
+            if (argValue.InputPath == "clipboard")
             {
                 image = ImageProcesser.GetClipBoardImage();
                 if (image != null)
@@ -49,12 +49,20 @@ namespace ImageTools
                     }
                 }
             }
-            else
+            else 
+            if (Regex.IsMatch(argValue.InputPath, @"^?:\\*\.*"))
             {
-                image = Image.FromFile(argValue.InputPath[0]);
+                try
+                {
+                    image = Image.FromFile(argValue.InputPath);
+                }
+                catch (Exception ex)
+                {
+                    OptionAnalyzer.ShowError($"{ex}: Can't open file");
+                }
             }
 
-            if (argValue.OutputPath[0] == "clipboard")
+            if (argValue.OutputPath == "clipboard")
             {
                 Clipboard.Clear();
                 Clipboard.SetImage(image);
@@ -62,7 +70,18 @@ namespace ImageTools
             else
             {
                 Console.WriteLine(argValue.OutputPath);
-                image.Save(argValue.OutputPath[0], ImageFormat.Png);
+                image.Save(argValue.OutputPath, ImageFormat.Png);
+                string ext = Path.GetExtension(argValue.InputPath);
+                switch (ext)
+                {
+                    case ".jpg":
+                    case ".jpeg":
+                        Console.WriteLine("jpg");
+                        break;
+                    case ".png":
+                        Console.WriteLine("png");
+                        break;
+                }
             }
             Console.ReadLine();
         }
@@ -258,11 +277,11 @@ namespace ImageTools
 
     class Options
     {
-        [Option('i', "input", Default = "clipboard", Required = true, HelpText = "Source file path")]
-        public string[] InputPath { get; set; }
+        [Option('i', "input", Default = "clipboard", Separator = ',', Required = true, HelpText = "Source file path")]
+        public string InputPath { get; set; }
 
-        [Option('o', "output", Default = "clipboard", Required = true, HelpText = "Destination file path")]
-        public string[] OutputPath { get; set; }
+        [Option('o', "output", Default = "clipboard", Separator = ',', Required = true, HelpText = "Destination file path")]
+        public string OutputPath { get; set; }
 
         [Option('r', "ratio", Required = true, HelpText = "Ratio")]
         public int Ratio { get; set; }
@@ -279,9 +298,9 @@ namespace ImageTools
 
     public class ArgumentValue
     {
-        public string[] InputPath { get; set; }
+        public string InputPath { get; set; }
 
-        public string[] OutputPath { get; set; }
+        public string OutputPath { get; set; }
 
         public string JsonPath { get; set; }
 
