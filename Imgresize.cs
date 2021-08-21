@@ -25,7 +25,6 @@ namespace ImageTools
 
             if (argValue.InputPath == null)
             {
-                Console.ReadKey();
                 return;
             }
             else if (argValue.InputPath == "clipboard")
@@ -186,7 +185,7 @@ namespace ImageTools
                     Console.WriteLine(helpText);
                     Console.WriteLine(message);
                 });
-                Console.ReadKey();
+                // Console.ReadKey();
             }
         }
     }
