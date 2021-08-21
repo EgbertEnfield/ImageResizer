@@ -10,7 +10,15 @@ C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe ^
     /r:mscorlib.dll                                     ^
     /r:netstandard.dll                                  ^
     /r:System.dll                                       ^
-    %~dp0\%TARGET%.cs
+    /r:System.Drawing.dll                               ^
+    /r:System.Reflection.dll                            ^
+    /r:System.Runtime.Serialization.dll                 ^
+    /r:System.Runtime.Serialization.Json.dll;           ^
+    /r:System.Text.RegularExpressions.dll               ^
+    /r:System.Windows.Forms.dll                         ^
+    /r:System.Threading.dll                             ^
+    /r:%~dp0\bin\Debug\CommandLine.dll                  ^
+    %~dp0\%TARGET_0%.cs %~dp0\Properties\AssemblyInfo.cs
 
 if errorlevel 1 goto ERROR
 
@@ -19,7 +27,8 @@ title Succeeded
 color 2F
 echo.
 pause
-start %~dp0\%TARGET_1%.exe
+move %~dp0\%TARGET_0%.exe %USERPROFILE%\desktop\%TARGET_0%.exe
+copy %~dp0\bin\Debug\CommandLine.dll %USERPROFILE%\desktop\CommandLine.dll
 color
 exit
 

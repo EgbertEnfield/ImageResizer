@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Runtime;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Windows.Forms;
@@ -23,19 +22,22 @@ namespace ImageTools
         {
             Image image = null;
             ArgumentValue argValue = OptionAnalyzer.AnalyzeArguments(args);
-            if (argValue.InputPath == "clipboard")
+
+            if (argValue.InputPath == null)
+            {
+                Console.ReadKey();
+                return;
+            }
+            else if (argValue.InputPath == "clipboard")
             {
                 image = ImageProcesser.GetClipBoardImage();
                 if (image != null)
                 {
                     if (argValue.UsePercent == true)
                     {
-                        double percent = argValue.Ratio * 0.01;
+                        double percent = (double)argValue.Ratio / (double)100;
                         int newWidth = (int)Math.Round((double)image.Width * percent);
                         int newHeight = (int)Math.Round((double)image.Height * percent);
-
-                        Console.WriteLine($"{image.Width}, {image.Height}");
-                        Console.WriteLine($"{percent}, {newWidth}, {newHeight}");
 
                         image = ImageProcesser.CreateThumbnail(image, newWidth, newHeight);
                     }
@@ -49,7 +51,7 @@ namespace ImageTools
                     }
                 }
             }
-            else if (Regex.IsMatch(argValue.InputPath, @"\A[a-zA-Z]:\\.*\..+ | \A\..+"))
+            else if (Regex.IsMatch(argValue.InputPath, @"\A[a-zA-Z]:\\.*\..+\z|\A\.\\.*\..+\z|\A[^\\]*\..+\z"))
             {
                 try
                 {
@@ -57,47 +59,62 @@ namespace ImageTools
                 }
                 catch (Exception ex)
                 {
-                    OptionAnalyzer.ShowError($"{ex}: Can't open file");
-                    Console.ReadLine();
+                    OptionAnalyzer.ShowError(string.Format("{0}: Can't open file", ex));
                     return;
                 }
             }
             else
             {
-                try
-                {
-                    image = Image.FromFile(argValue.InputPath);
-                }
-                catch (Exception ex)
-                {
-                    OptionAnalyzer.ShowError($"{ex}: Can't open file");
-                    Console.ReadLine();
-                    return;
-                }
+                OptionAnalyzer.ShowError("unable path or format");
+                return;
             }
 
             if (argValue.OutputPath == "clipboard")
             {
-                Clipboard.Clear();
-                Clipboard.SetImage(image);
-            }        
-            else
-            {
-                string ext = Path.GetExtension(argValue.OutputPath);
-                switch (ext)
+                try
                 {
-                    case ".jpg":
-                    case ".jpeg":
-                        Console.WriteLine("jpg");
-                        image.Save(argValue.OutputPath, ImageFormat.Jpeg);
-                        break;
-                    case ".png":
-                        Console.WriteLine("png");
-                        image.Save(argValue.OutputPath, ImageFormat.Png);
-                        break;
+                    Clipboard.Clear();
+                    Clipboard.SetImage(image);
+                }
+                catch (Exception ex)
+                {
+                    OptionAnalyzer.ShowError(string.Format("{0}: no image to set on the clipboard", ex));
+                    return;
                 }
             }
-            Console.ReadLine();
+            else if (Regex.IsMatch(argValue.OutputPath, @"\A[a-zA-Z]:\\.*\..+\z|\A\.\\.*\..+\z|\A[^\\]*\..+\z"))
+            {
+                try
+                {
+                    string ext = Path.GetExtension(argValue.OutputPath);
+                    switch (ext)
+                    {
+                        case ".jpg":
+                        case ".jpeg":
+                            image.Save(argValue.OutputPath, ImageFormat.Jpeg);
+                            break;
+                        case ".png":
+                            image.Save(argValue.OutputPath, ImageFormat.Png);
+                            break;
+                        case ".gif":
+                            image.Save(argValue.OutputPath, ImageFormat.Gif);
+                            break;
+                        case ".bmp":
+                            image.Save(argValue.OutputPath, ImageFormat.Bmp);
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    OptionAnalyzer.ShowError(string.Format("{0}: can't save image", ex));
+                    return;
+                }
+            }
+            else
+            {
+                OptionAnalyzer.ShowError("unable path or format");
+                return;
+            }
         }
     }
 
@@ -152,7 +169,6 @@ namespace ImageTools
                 }
                 catch (IndexOutOfRangeException ex)
                 {
-                    Console.WriteLine("Exception happend");
                     Console.WriteLine(string.Format("{0}: No argument exists", ex.GetType().ToString()));
                 }
                 return new ArgumentValue();
@@ -170,6 +186,7 @@ namespace ImageTools
                     Console.WriteLine(helpText);
                     Console.WriteLine(message);
                 });
+                Console.ReadKey();
             }
         }
     }
@@ -276,18 +293,18 @@ namespace ImageTools
         }
     }
 
-    class Options
+    public class Options
     {
-        [Option('i', "input", Default = "clipboard", Separator = ',', Required = true, HelpText = "Source file path")]
+        [Option('i', "input", Default = "clipboard", HelpText = "Source file path", Required = true)]
         public string InputPath { get; set; }
 
-        [Option('o', "output", Default = "clipboard", Separator = ',', Required = true, HelpText = "Destination file path")]
+        [Option('o', "output", Default = "clipboard", HelpText = "Destination file path")]
         public string OutputPath { get; set; }
 
         [Option('r', "ratio", Required = true, HelpText = "Ratio")]
         public int Ratio { get; set; }
 
-        [Option('j', "json", HelpText = "load settings from json.")]
+        [Option('j', "json", HelpText = "load settings from json.(Unimplemented)")]
         public string LoadFromJson { get; set; }
 
         [Option('p', "percent", HelpText = "Use percentage to ratio")]
