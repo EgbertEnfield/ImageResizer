@@ -49,8 +49,7 @@ namespace ImageTools
                     }
                 }
             }
-            else 
-            if (Regex.IsMatch(argValue.InputPath, @"^?:\\*\.*"))
+            else if (Regex.IsMatch(argValue.InputPath, @"\A[a-zA-Z]:\\.*\..+ | \A\..+"))
             {
                 try
                 {
@@ -59,6 +58,21 @@ namespace ImageTools
                 catch (Exception ex)
                 {
                     OptionAnalyzer.ShowError($"{ex}: Can't open file");
+                    Console.ReadLine();
+                    return;
+                }
+            }
+            else
+            {
+                try
+                {
+                    image = Image.FromFile(argValue.InputPath);
+                }
+                catch (Exception ex)
+                {
+                    OptionAnalyzer.ShowError($"{ex}: Can't open file");
+                    Console.ReadLine();
+                    return;
                 }
             }
 
@@ -66,37 +80,24 @@ namespace ImageTools
             {
                 Clipboard.Clear();
                 Clipboard.SetImage(image);
-            }
+            }        
             else
             {
-                Console.WriteLine(argValue.OutputPath);
-                image.Save(argValue.OutputPath, ImageFormat.Png);
-                string ext = Path.GetExtension(argValue.InputPath);
+                string ext = Path.GetExtension(argValue.OutputPath);
                 switch (ext)
                 {
                     case ".jpg":
                     case ".jpeg":
                         Console.WriteLine("jpg");
+                        image.Save(argValue.OutputPath, ImageFormat.Jpeg);
                         break;
                     case ".png":
                         Console.WriteLine("png");
+                        image.Save(argValue.OutputPath, ImageFormat.Png);
                         break;
                 }
             }
             Console.ReadLine();
-        }
-
-        static string GetEscapedPath(string path)
-        {
-            if (Regex.IsMatch(path, @"^[a-zA-Z]:\\*"))
-            {
-                Regex.Replace(path, @"\\", @"\\\\");
-                return path;
-            }
-            else
-            {
-                return path;
-            }
         }
     }
 
