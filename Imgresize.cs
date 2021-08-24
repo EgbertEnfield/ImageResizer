@@ -20,10 +20,11 @@ namespace ImageTools
         [STAThread]
         private static void Main(string[] args)
         {
+            Console.ReadKey(true);
             Image image = null;
-            ArgumentValue argValue = OptionAnalyzer.AnalyzeArguments(args);
+            Options argValue = OptionAnalyzer.AnalyzeArguments(args);
 
-            if (argValue.InputPath == null)
+            if (argValue == null)
             {
                 return;
             }
@@ -120,57 +121,86 @@ namespace ImageTools
     public class OptionAnalyzer
     {
         /// <summary>
-        /// プログラムの引数を解析し、不適ならばヘルプを表示する。
+        /// Analyze parameters and return class object
         /// </summary>
         /// <param name="arguments">起動時のプログラムの引数</param>
         /// <returns>値が入ったArgumentValueのインスタンス</returns>
-        public static ArgumentValue AnalyzeArguments(string[] arguments)
+        public static Options AnalyzeArguments(string[] arguments)
         {
+            // Options options;
+            // var result = (ParserResult<Options>)Parser.Default.ParseArguments<Options>(arguments);
+            // if (result.Tag == ParserResultType.Parsed)
+            // {
+            //     var parsed = (Parsed<Options>)result;
+            //     options = parsed.Value;
+            //     if (options.UsePercent == true && options.UsePixel == true)
+            //     {
+            //         ShowError("-p and -x option can't be specified at same time.");
+            //         return null;
+            //     }
+            //     else if (options.UsePercent == false && options.UsePixel == false)
+            //     {
+            //         ShowError("-p or -x option must be specified at same time.");
+            //         return null;
+            //     }
+            //     else
+            //     {
+            //         return options;
+            //     }
+            // }
+            // else
+            // {
+            //     try
+            //     {
+            //         if (arguments[0] != "--version" || arguments[0] == "-?")
+            //         {
+            //             Console.WriteLine("You can specify \"clipboad\" at \"source\" and \"dest\"");
+            //             Console.WriteLine("Application will load from clipboad and outputs picture specified path or on clipboad");
+            //         }
+            //     }
+            //     catch (IndexOutOfRangeException ex)
+            //     {
+            //         Console.WriteLine(string.Format("{0}: No argument exists", ex.GetType().ToString()));
+            //     }
+            //     return null;
+            // }
             Options options;
-            var result = (ParserResult<Options>)Parser.Default.ParseArguments<Options>(arguments);
-            if (result.Tag == ParserResultType.Parsed)
+            try
             {
-                var parsed = (Parsed<Options>)result;
-                options = parsed.Value;
-                if (options.UsePercent == true && options.UsePixel == true)
+                if (arguments[0] == "-?")
                 {
-                    ShowError("-p and -x option can't be specified at same time.");
-                    return new ArgumentValue();
+                    ShowError("");
+                    return null;
                 }
-                else if (options.UsePercent == false && options.UsePixel == false)
+                var result = (ParserResult<Options>)Parser.Default.ParseArguments<Options>(arguments);
+                if (result.Tag == ParserResultType.Parsed)
                 {
-                    ShowError("-p or -x option must be specified at same time.");
-                    return new ArgumentValue();
+                    var parsed = (Parsed<Options>)result;
+                    options = parsed.Value;
+                    if (options.UsePercent == true && options.UsePixel == true)
+                    {
+                        ShowError("-p and -x option can't be specified at same time.");
+                        return null;
+                    }
+                    else if (options.UsePercent == false && options.UsePixel == false)
+                    {
+                        ShowError("-p or -x option must be specified at same time.");
+                        return null;
+                    }
+                    else
+                    {
+                        return options;
+                    }
                 }
                 else
                 {
-                    var argValues = new ArgumentValue()
-                    {
-                        InputPath = options.InputPath,
-                        OutputPath = options.OutputPath,
-                        JsonPath = options.LoadFromJson,
-                        Ratio = options.Ratio,
-                        UsePercent = options.UsePercent,
-                        UsePixel = options.UsePixel
-                    };
-                    return argValues;
+                    return null;
                 }
             }
-            else
+            catch (IndexOutOfRangeException)
             {
-                try
-                {
-                    if (arguments[0] != "--version" || arguments[0] == "-?")
-                    {
-                        Console.WriteLine("You can specify \"clipboad\" at \"source\" and \"dest\"");
-                        Console.WriteLine("Application will load from clipboad and outputs picture specified path or on clipboad");
-                    }
-                }
-                catch (IndexOutOfRangeException ex)
-                {
-                    Console.WriteLine(string.Format("{0}: No argument exists", ex.GetType().ToString()));
-                }
-                return new ArgumentValue();
+                ShowError("no arguments specified");
+                return null;
             }
         }
 
@@ -310,21 +340,6 @@ namespace ImageTools
         public bool UsePercent { get; set; }
 
         [Option('x', "pixel", HelpText = "Use pixel to ratio")]
-        public bool UsePixel { get; set; }
-    }
-
-    public class ArgumentValue
-    {
-        public string InputPath { get; set; }
-
-        public string OutputPath { get; set; }
-
-        public string JsonPath { get; set; }
-
-        public int Ratio { get; set; }
-
-        public bool UsePercent { get; set; }
-
         public bool UsePixel { get; set; }
     }
 
