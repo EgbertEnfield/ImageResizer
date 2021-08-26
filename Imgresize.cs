@@ -20,35 +20,47 @@ namespace ImageTools
         [STAThread]
         private static void Main(string[] args)
         {
-            Console.ReadKey(true);
             Image image = null;
             Options argValue = OptionAnalyzer.AnalyzeArguments(args);
 
             if (argValue == null)
             {
+                Console.ReadKey();
                 return;
             }
             else if (argValue.InputPath == "clipboard")
             {
-                image = ImageProcesser.GetClipBoardImage();
-                if (image != null)
+                try
                 {
-                    if (argValue.UsePercent == true)
+                    image = ImageProcesser.GetClipBoardImage();
+                    if (image == null)
                     {
-                        double percent = (double)argValue.Ratio / (double)100;
+                        Console.WriteLine(string.Format("No images exists on the clipboard."));
+                        Console.ReadKey();
+                        return;
+                    }
+                    if (argValue.Mode == SizeMode.percent)
+                    {
+                        double percent = (double)argValue.Size / (double)100;
                         int newWidth = (int)Math.Round((double)image.Width * percent);
                         int newHeight = (int)Math.Round((double)image.Height * percent);
 
                         image = ImageProcesser.CreateThumbnail(image, newWidth, newHeight);
                     }
-                    else if (argValue.UsePixel == true)
+                    else if (argValue.Mode == SizeMode.pixel)
                     {
-                        double ratio = (double)argValue.Ratio / (double)image.Width;
+                        double ratio = (double)argValue.Size / (double)image.Width;
                         int newWidth = (int)Math.Round((double)image.Width * ratio);
                         int newHeight = (int)Math.Round((double)image.Height * ratio);
 
                         image = ImageProcesser.CreateThumbnail(image, newWidth, newHeight);
                     }
+                    Console.WriteLine("[Suceeded] Loaded from clipboard.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(string.Format("{0}: Unknown error occured", ex));
+                    return;
                 }
             }
             else if (Regex.IsMatch(argValue.InputPath, @"\A[a-zA-Z]:\\.*\..+\z|\A\.\\.*\..+\z|\A[^\\]*\..+\z"))
@@ -56,10 +68,26 @@ namespace ImageTools
                 try
                 {
                     image = Image.FromFile(argValue.InputPath);
+                    Console.WriteLine(string.Format("[Suceeded] Loaded from {0}", argValue.InputPath));
+                }
+                catch (FileNotFoundException ex)
+                {
+                    Console.WriteLine(string.Format("{0}: Source file does not exists.", ex));
+                    return;
+                }
+                catch (ArgumentException ex)
+                {
+                    Console.WriteLine(string.Format("{0}: Source file path is uri.", ex));
+                    return;
+                }
+                catch (OutOfMemoryException ex)
+                {
+                    Console.WriteLine(string.Format("{0}: Image format of source file is not available.", ex));
+                    return;
                 }
                 catch (Exception ex)
                 {
-                    OptionAnalyzer.ShowError(string.Format("{0}: Can't open file", ex));
+                    Console.WriteLine(string.Format("{0}: Unknown error occured.", ex));
                     return;
                 }
             }
@@ -75,10 +103,11 @@ namespace ImageTools
                 {
                     Clipboard.Clear();
                     Clipboard.SetImage(image);
+                    Console.WriteLine("[Suceeded] Saved on the clipboard.");
                 }
                 catch (Exception ex)
                 {
-                    OptionAnalyzer.ShowError(string.Format("{0}: no image to set on the clipboard", ex));
+                    Console.WriteLine(string.Format("{0}: Unknown error occured.", ex));
                     return;
                 }
             }
@@ -103,6 +132,7 @@ namespace ImageTools
                             image.Save(argValue.OutputPath, ImageFormat.Bmp);
                             break;
                     }
+                    Console.WriteLine(string.Format("[Suceeded] Saved at {0}", argValue.OutputPath));
                 }
                 catch (Exception ex)
                 {
@@ -115,6 +145,7 @@ namespace ImageTools
                 OptionAnalyzer.ShowError("unable path or format");
                 return;
             }
+            Console.ReadLine();
         }
     }
 
@@ -127,43 +158,6 @@ namespace ImageTools
         /// <returns>値が入ったArgumentValueのインスタンス</returns>
         public static Options AnalyzeArguments(string[] arguments)
         {
-            // Options options;
-            // var result = (ParserResult<Options>)Parser.Default.ParseArguments<Options>(arguments);
-            // if (result.Tag == ParserResultType.Parsed)
-            // {
-            //     var parsed = (Parsed<Options>)result;
-            //     options = parsed.Value;
-            //     if (options.UsePercent == true && options.UsePixel == true)
-            //     {
-            //         ShowError("-p and -x option can't be specified at same time.");
-            //         return null;
-            //     }
-            //     else if (options.UsePercent == false && options.UsePixel == false)
-            //     {
-            //         ShowError("-p or -x option must be specified at same time.");
-            //         return null;
-            //     }
-            //     else
-            //     {
-            //         return options;
-            //     }
-            // }
-            // else
-            // {
-            //     try
-            //     {
-            //         if (arguments[0] != "--version" || arguments[0] == "-?")
-            //         {
-            //             Console.WriteLine("You can specify \"clipboad\" at \"source\" and \"dest\"");
-            //             Console.WriteLine("Application will load from clipboad and outputs picture specified path or on clipboad");
-            //         }
-            //     }
-            //     catch (IndexOutOfRangeException ex)
-            //     {
-            //         Console.WriteLine(string.Format("{0}: No argument exists", ex.GetType().ToString()));
-            //     }
-            //     return null;
-            // }
             Options options;
             try
             {
@@ -172,25 +166,23 @@ namespace ImageTools
                     ShowError("");
                     return null;
                 }
+
                 var result = (ParserResult<Options>)Parser.Default.ParseArguments<Options>(arguments);
+                if (arguments[0] == "--help" || arguments[0] == "--version")
+                {
+                    return null;
+                }
+
                 if (result.Tag == ParserResultType.Parsed)
                 {
                     var parsed = (Parsed<Options>)result;
                     options = parsed.Value;
-                    if (options.UsePercent == true && options.UsePixel == true)
-                    {
-                        ShowError("-p and -x option can't be specified at same time.");
-                        return null;
-                    }
-                    else if (options.UsePercent == false && options.UsePixel == false)
-                    {
-                        ShowError("-p or -x option must be specified at same time.");
-                        return null;
-                    }
-                    else
-                    {
-                        return options;
-                    }
+                    Console.WriteLine(string.Format("Input:    {0}", options.InputPath));
+                    Console.WriteLine(string.Format("Output:   {0}", options.OutputPath));
+                    Console.WriteLine(string.Format("Size:     {0}", options.Size));
+                    Console.WriteLine(string.Format("SizeMode: {0}", options.Mode));
+                    Console.WriteLine();
+                    return options;
                 }
                 else
                 {
@@ -199,8 +191,22 @@ namespace ImageTools
             }
             catch (IndexOutOfRangeException)
             {
-                ShowError("no arguments specified");
-                return null;
+                var result = (ParserResult<Options>)Parser.Default.ParseArguments<Options>(arguments);
+                if (result.Tag == ParserResultType.Parsed)
+                {
+                    var parsed = (Parsed<Options>)result;
+                    options = parsed.Value;
+                    Console.WriteLine(string.Format("Input:    {0}", options.InputPath));
+                    Console.WriteLine(string.Format("Output:   {0}", options.OutputPath));
+                    Console.WriteLine(string.Format("Size:     {0}", options.Size));
+                    Console.WriteLine(string.Format("SizeMode: {0}", options.Mode));
+                    Console.WriteLine();
+                    return options;
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
@@ -289,14 +295,6 @@ namespace ImageTools
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();
             thread.Join();
-
-            if (image == null)
-            {
-                string errmsg = "No image founds on the clipboard";
-                OptionAnalyzer.ShowError(errmsg);
-                Console.ReadLine();
-                return null;
-            }
             return image;
         }
 
@@ -324,23 +322,26 @@ namespace ImageTools
 
     public class Options
     {
-        [Option('i', "input", Default = "clipboard", HelpText = "Source file path", Required = true)]
+        [Option('i', "input", Default = "clipboard", HelpText = "Source file path. You can open on the clipboard with using \"clipboard\"")]
         public string InputPath { get; set; }
 
-        [Option('o', "output", Default = "clipboard", HelpText = "Destination file path")]
+        [Option('o', "output", Default = "clipboard", HelpText = "Destination file path. You can output on the clipboard with using \"clipboard\"")]
         public string OutputPath { get; set; }
 
-        [Option('r', "ratio", Required = true, HelpText = "Ratio")]
-        public int Ratio { get; set; }
+        [Option('s', "size", Default = 100, HelpText = "Specify percentage or pixel with using -m")]
+        public int Size { get; set; }
 
         [Option('j', "json", HelpText = "load settings from json.(Unimplemented)")]
         public string LoadFromJson { get; set; }
 
-        [Option('p', "percent", HelpText = "Use percentage to ratio")]
-        public bool UsePercent { get; set; }
+        [Option('m', "mode", Default = SizeMode.percent, HelpText = "specify size mode")]
+        public SizeMode Mode { get; set; }
+    }
 
-        [Option('x', "pixel", HelpText = "Use pixel to ratio")]
-        public bool UsePixel { get; set; }
+    public enum SizeMode
+    {
+        percent,
+        pixel,
     }
 
     [DataContract]
