@@ -33,12 +33,12 @@ namespace ImageTools
                 try
                 {
                     image = ImageProcesser.GetClipBoardImage();
-                    if (image == null)
-                    {
-                        Console.WriteLine(string.Format("No images exists on the clipboard."));
-                        Console.ReadKey();
-                        return;
-                    }
+                    //if (image == null)
+                    //{
+                    //    Console.WriteLine(string.Format("No images exists on the clipboard."));
+                    //    Console.ReadKey();
+                    //    return;
+                    //}
                     if (argValue.Mode == SizeMode.percent)
                     {
                         double percent = (double)argValue.Size / (double)100;
@@ -59,7 +59,7 @@ namespace ImageTools
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(string.Format("{0}: Unknown error occured", ex));
+                    Console.WriteLine(string.Format("{0} HResult:0x{1:X8}\n\t[Error] Unknown error occured.", ex.GetType(), ex.HResult));
                     return;
                 }
             }
@@ -72,22 +72,22 @@ namespace ImageTools
                 }
                 catch (FileNotFoundException ex)
                 {
-                    Console.WriteLine(string.Format("{0}: Source file does not exists.", ex));
+                    Console.WriteLine(string.Format("{0} HResult:0x{1:X8}\n\t[Error] Source file does not exists.", ex.GetType(), ex.HResult));
                     return;
                 }
                 catch (ArgumentException ex)
                 {
-                    Console.WriteLine(string.Format("{0}: Source file path is uri.", ex));
+                    Console.WriteLine(string.Format("{0} HResult:0x{1:X8}\n\t[Error] Source path format is uri", ex.GetType(), ex.HResult));
                     return;
                 }
                 catch (OutOfMemoryException ex)
                 {
-                    Console.WriteLine(string.Format("{0}: Image format of source file is not available.", ex));
+                    Console.WriteLine(string.Format("{0} HResult:0x{1:X8}\n\t[Error] Image format of source file is not available.", ex.GetType(), ex.HResult));
                     return;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(string.Format("{0}: Unknown error occured.", ex));
+                    Console.WriteLine(string.Format("{0} HResult:0x{1:X8}\n\t[Error] Unknown error occured.", ex.GetType(), ex.HResult));
                     return;
                 }
             }
@@ -189,24 +189,18 @@ namespace ImageTools
                     return null;
                 }
             }
-            catch (IndexOutOfRangeException)
+            catch (IndexOutOfRangeException ex)
             {
                 var result = (ParserResult<Options>)Parser.Default.ParseArguments<Options>(arguments);
-                if (result.Tag == ParserResultType.Parsed)
-                {
-                    var parsed = (Parsed<Options>)result;
-                    options = parsed.Value;
-                    Console.WriteLine(string.Format("Input:    {0}", options.InputPath));
-                    Console.WriteLine(string.Format("Output:   {0}", options.OutputPath));
-                    Console.WriteLine(string.Format("Size:     {0}", options.Size));
-                    Console.WriteLine(string.Format("SizeMode: {0}", options.Mode));
-                    Console.WriteLine();
-                    return options;
-                }
-                else
-                {
-                    return null;
-                }
+                var parsed = (Parsed<Options>)result;
+                options = parsed.Value;
+                Console.WriteLine(string.Format("Source: {0}", options.InputPath));
+                Console.WriteLine(string.Format("Dest:   {0}", options.OutputPath));
+                Console.WriteLine(string.Format("Size:   {0}", options.Size));
+                Console.WriteLine(string.Format("Mode:   {0}", options.Mode));
+                Console.WriteLine();
+                Console.WriteLine(string.Format("{0} HResult:0x{1:X8}\n\t[Notice] No argument specified. Use default.", ex.GetType(), ex.HResult));
+                return options;
             }
         }
 
