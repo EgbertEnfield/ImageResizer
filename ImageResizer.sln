@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31424.327
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31612.314
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageResizer", "ImageResizer.csproj", "{3EBAD68A-2BEC-484F-9FAC-B9E3E8EB129A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "imgresize_controller", "..\imgresize_controller\imgresize_controller.csproj", "{CF78F76E-E895-4BEB-B0C6-9E0DC3CA6996}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,14 @@ Global
 		{3EBAD68A-2BEC-484F-9FAC-B9E3E8EB129A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3EBAD68A-2BEC-484F-9FAC-B9E3E8EB129A}.Release|x64.ActiveCfg = Release|x64
 		{3EBAD68A-2BEC-484F-9FAC-B9E3E8EB129A}.Release|x64.Build.0 = Release|x64
+		{CF78F76E-E895-4BEB-B0C6-9E0DC3CA6996}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF78F76E-E895-4BEB-B0C6-9E0DC3CA6996}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF78F76E-E895-4BEB-B0C6-9E0DC3CA6996}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CF78F76E-E895-4BEB-B0C6-9E0DC3CA6996}.Debug|x64.Build.0 = Debug|Any CPU
+		{CF78F76E-E895-4BEB-B0C6-9E0DC3CA6996}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF78F76E-E895-4BEB-B0C6-9E0DC3CA6996}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF78F76E-E895-4BEB-B0C6-9E0DC3CA6996}.Release|x64.ActiveCfg = Release|Any CPU
+		{CF78F76E-E895-4BEB-B0C6-9E0DC3CA6996}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
