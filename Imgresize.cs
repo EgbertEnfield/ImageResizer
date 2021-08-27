@@ -25,7 +25,6 @@ namespace ImageTools
 
             if (argValue == null)
             {
-                Console.ReadKey();
                 return;
             }
             else if (argValue.InputPath == "clipboard")
@@ -33,34 +32,44 @@ namespace ImageTools
                 try
                 {
                     image = ImageProcesser.GetClipBoardImage();
-                    //if (image == null)
-                    //{
-                    //    Console.WriteLine(string.Format("No images exists on the clipboard."));
-                    //    Console.ReadKey();
-                    //    return;
-                    //}
-                    if (argValue.Mode == SizeMode.percent)
+                    if (image == null)
                     {
-                        double percent = (double)argValue.Size / (double)100;
-                        int newWidth = (int)Math.Round((double)image.Width * percent);
-                        int newHeight = (int)Math.Round((double)image.Height * percent);
-
-                        image = ImageProcesser.CreateThumbnail(image, newWidth, newHeight);
+                        throw new NullReferenceException();
                     }
-                    else if (argValue.Mode == SizeMode.pixel)
+                    switch (argValue.Mode)
                     {
-                        double ratio = (double)argValue.Size / (double)image.Width;
-                        int newWidth = (int)Math.Round((double)image.Width * ratio);
-                        int newHeight = (int)Math.Round((double)image.Height * ratio);
+                        case SizeMode.percent:
+                            double percent = (double)argValue.Size / (double)100;
+                            int newWidth_p = (int)Math.Round((double)image.Width * percent);
+                            int newHeight_p = (int)Math.Round((double)image.Height * percent);
 
-                        image = ImageProcesser.CreateThumbnail(image, newWidth, newHeight);
+                            image = ImageProcesser.CreateThumbnail(image, newWidth_p, newHeight_p);
+                            break;
+                        case SizeMode.pixel:
+                            double ratio = (double)argValue.Size / (double)image.Width;
+                            int newWidth_x = (int)Math.Round((double)image.Width * ratio);
+                            int newHeight_x = (int)Math.Round((double)image.Height * ratio);
+
+                            image = ImageProcesser.CreateThumbnail(image, newWidth_x, newHeight_x);
+                            break;                                                                                                                                                                                                                                                                                                     
                     }
                     Console.WriteLine("[Suceeded] Loaded from clipboard.");
                 }
+                catch (NullReferenceException ex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(string.Format("[Error] No images exists on the clipboard.\tHResult:0x{0:X8}", ex.HResult));
+                    return;
+                }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(string.Format("{0} HResult:0x{1:X8}\n\t[Error] Unknown error occured.", ex.GetType(), ex.HResult));
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(string.Format("[Error] Unknown error occured.\tHResult:0x{0:X8}", ex.HResult));
                     return;
+                }
+                finally
+                {
+                    Console.ResetColor();
                 }
             }
             else if (Regex.IsMatch(argValue.InputPath, @"\A[a-zA-Z]:\\.*\..+\z|\A\.\\.*\..+\z|\A[^\\]*\..+\z"))
@@ -68,27 +77,62 @@ namespace ImageTools
                 try
                 {
                     image = Image.FromFile(argValue.InputPath);
+                    if (image == null)
+                    {
+                        throw new NullReferenceException();
+                    }
+                    switch (argValue.Mode)
+                    {
+                        case SizeMode.percent:
+                            double percent = (double)argValue.Size / (double)100;
+                            int newWidth_p = (int)Math.Round((double)image.Width * percent);
+                            int newHeight_p = (int)Math.Round((double)image.Height * percent);
+
+                            image = ImageProcesser.CreateThumbnail(image, newWidth_p, newHeight_p);
+                            break;
+                        case SizeMode.pixel:
+                            double ratio = (double)argValue.Size / (double)image.Width;
+                            int newWidth_x = (int)Math.Round((double)image.Width * ratio);
+                            int newHeight_x = (int)Math.Round((double)image.Height * ratio);
+
+                            image = ImageProcesser.CreateThumbnail(image, newWidth_x, newHeight_x);
+                            break;
+                    }
                     Console.WriteLine(string.Format("[Suceeded] Loaded from {0}", argValue.InputPath));
+                }
+                catch (NullReferenceException ex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(string.Format("[Error] No images exists on the clipboard.\tHResult:0x{0:X8}", ex.HResult));
+                    return;
                 }
                 catch (FileNotFoundException ex)
                 {
-                    Console.WriteLine(string.Format("{0} HResult:0x{1:X8}\n\t[Error] Source file does not exists.", ex.GetType(), ex.HResult));
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(string.Format("[Error] Source file does not exists.\tHResult:0x{0:X8}", ex.HResult));
                     return;
                 }
                 catch (ArgumentException ex)
                 {
-                    Console.WriteLine(string.Format("{0} HResult:0x{1:X8}\n\t[Error] Source path format is uri", ex.GetType(), ex.HResult));
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(string.Format("[Error] Source path format is uri.\tHResult:0x{0:X8}", ex.HResult));
                     return;
                 }
                 catch (OutOfMemoryException ex)
                 {
-                    Console.WriteLine(string.Format("{0} HResult:0x{1:X8}\n\t[Error] Image format of source file is not available.", ex.GetType(), ex.HResult));
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(string.Format("[Error] Image format of source file is not available.\tHResult:0x{0:X8}", ex.HResult));
                     return;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(string.Format("{0} HResult:0x{1:X8}\n\t[Error] Unknown error occured.", ex.GetType(), ex.HResult));
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(string.Format("[Error] Unknown error occured.\tHResult:0x{0:X8}", ex.HResult));
                     return;
+                }
+                finally
+                {
+                    Console.ResetColor();
                 }
             }
             else
@@ -107,8 +151,13 @@ namespace ImageTools
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(string.Format("{0}: Unknown error occured.", ex));
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(string.Format("[Error] Unknown error occured.\tHResult:0x{0:X8}", ex.HResult));
                     return;
+                }
+                finally
+                {
+                    Console.ResetColor();
                 }
             }
             else if (Regex.IsMatch(argValue.OutputPath, @"\A[a-zA-Z]:\\.*\..+\z|\A\.\\.*\..+\z|\A[^\\]*\..+\z"))
@@ -136,16 +185,17 @@ namespace ImageTools
                 }
                 catch (Exception ex)
                 {
-                    OptionAnalyzer.ShowError(string.Format("{0}: can't save image", ex));
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(string.Format("[Error] Unknown error occured.\tHResult:0x{0:X8}", ex.HResult));
                     return;
                 }
+                finally {  Console.ResetColor(); }
             }
             else
             {
                 OptionAnalyzer.ShowError("unable path or format");
                 return;
             }
-            Console.ReadLine();
         }
     }
 
@@ -189,7 +239,7 @@ namespace ImageTools
                     return null;
                 }
             }
-            catch (IndexOutOfRangeException ex)
+            catch (IndexOutOfRangeException)
             {
                 var result = (ParserResult<Options>)Parser.Default.ParseArguments<Options>(arguments);
                 var parsed = (Parsed<Options>)result;
@@ -199,7 +249,7 @@ namespace ImageTools
                 Console.WriteLine(string.Format("Size:   {0}", options.Size));
                 Console.WriteLine(string.Format("Mode:   {0}", options.Mode));
                 Console.WriteLine();
-                Console.WriteLine(string.Format("{0} HResult:0x{1:X8}\n\t[Notice] No argument specified. Use default.", ex.GetType(), ex.HResult));
+                // Console.WriteLine(string.Format("[Notice] No argument specified. Use default.\tHResult:0x{0:X8}", ex.HResult));
                 return options;
             }
         }
@@ -215,7 +265,6 @@ namespace ImageTools
                     Console.WriteLine(helpText);
                     Console.WriteLine(message);
                 });
-                // Console.ReadKey();
             }
         }
     }
