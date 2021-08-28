@@ -13,7 +13,7 @@ using System.Threading;
 using CommandLine;
 using CommandLine.Text;
 
-namespace ImageTools
+namespace ImgresizeGUI
 {
     class Imgresize
     {
@@ -23,19 +23,14 @@ namespace ImageTools
             Image image = null;
             Options argValue = OptionAnalyzer.AnalyzeArguments(args);
 
-            if (argValue == null)
-            {
-                return;
-            }
+            if (argValue == null) return;
+
             else if (argValue.InputPath == "clipboard")
             {
                 try
                 {
                     image = ImageProcesser.GetClipBoardImage();
-                    if (image == null)
-                    {
-                        throw new NullReferenceException();
-                    }
+                    if (image == null) throw new NullReferenceException();
                     switch (argValue.Mode)
                     {
                         case SizeMode.percent:
@@ -51,25 +46,29 @@ namespace ImageTools
                             int newHeight_x = (int)Math.Round((double)image.Height * ratio);
 
                             image = ImageProcesser.CreateThumbnail(image, newWidth_x, newHeight_x);
-                            break;                                                                                                                                                                                                                                                                                                     
+                            break;
                     }
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("[Suceeded] Loaded from clipboard.");
                 }
                 catch (NullReferenceException ex)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(string.Format("[Error] No images exists on the clipboard.\tHResult:0x{0:X8}", ex.HResult));
+                    Console.WriteLine(string.Format("[Error] There are no images on the clipboard.\tCode:0x{0:X8}", ex.HResult));
                     return;
                 }
                 catch (Exception ex)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(string.Format("[Error] Unknown error occured.\tHResult:0x{0:X8}", ex.HResult));
+                    Console.WriteLine(string.Format("[Error] Unknown error occured.\tCode:0x{0:X8}", ex.HResult));
                     return;
                 }
                 finally
                 {
                     Console.ResetColor();
+#if DEBUG
+                    Console.ReadKey();
+#endif
                 }
             }
             else if (Regex.IsMatch(argValue.InputPath, @"\A[a-zA-Z]:\\.*\..+\z|\A\.\\.*\..+\z|\A[^\\]*\..+\z"))
@@ -77,10 +76,7 @@ namespace ImageTools
                 try
                 {
                     image = Image.FromFile(argValue.InputPath);
-                    if (image == null)
-                    {
-                        throw new NullReferenceException();
-                    }
+                    if (image == null) throw new NullReferenceException();
                     switch (argValue.Mode)
                     {
                         case SizeMode.percent:
@@ -98,41 +94,39 @@ namespace ImageTools
                             image = ImageProcesser.CreateThumbnail(image, newWidth_x, newHeight_x);
                             break;
                     }
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine(string.Format("[Suceeded] Loaded from {0}", argValue.InputPath));
                 }
                 catch (NullReferenceException ex)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(string.Format("[Error] No images exists on the clipboard.\tHResult:0x{0:X8}", ex.HResult));
+                    Console.WriteLine(string.Format("[Error] No images exists on the clipboard.\tCode:0x{0:X8}", ex.HResult));
                     return;
                 }
                 catch (FileNotFoundException ex)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(string.Format("[Error] Source file does not exists.\tHResult:0x{0:X8}", ex.HResult));
+                    Console.WriteLine(string.Format("[Error] Source file does not exists.\tCode:0x{0:X8}", ex.HResult));
                     return;
                 }
                 catch (ArgumentException ex)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(string.Format("[Error] Source path format is uri.\tHResult:0x{0:X8}", ex.HResult));
+                    Console.WriteLine(string.Format("[Error] Source path format is uri.\tCode:0x{0:X8}", ex.HResult));
                     return;
                 }
                 catch (OutOfMemoryException ex)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(string.Format("[Error] Image format of source file is not available.\tHResult:0x{0:X8}", ex.HResult));
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(string.Format("[Error] Unknown error occured.\tHResult:0x{0:X8}", ex.HResult));
+                    Console.WriteLine(string.Format("[Error] Image format of source file is not available.\tCode:0x{0:X8}", ex.HResult));
                     return;
                 }
                 finally
                 {
                     Console.ResetColor();
+#if DEBUG
+                    Console.ReadKey();
+#endif
                 }
             }
             else
@@ -147,17 +141,21 @@ namespace ImageTools
                 {
                     Clipboard.Clear();
                     Clipboard.SetImage(image);
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("[Suceeded] Saved on the clipboard.");
                 }
                 catch (Exception ex)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(string.Format("[Error] Unknown error occured.\tHResult:0x{0:X8}", ex.HResult));
+                    Console.WriteLine(string.Format("[Error] Unknown error occured.\tCode:0x{0:X8}", ex.HResult));
                     return;
                 }
                 finally
                 {
                     Console.ResetColor();
+#if DEBUG
+                    Console.ReadKey();
+#endif
                 }
             }
             else if (Regex.IsMatch(argValue.OutputPath, @"\A[a-zA-Z]:\\.*\..+\z|\A\.\\.*\..+\z|\A[^\\]*\..+\z"))
@@ -181,15 +179,23 @@ namespace ImageTools
                             image.Save(argValue.OutputPath, ImageFormat.Bmp);
                             break;
                     }
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine(string.Format("[Suceeded] Saved at {0}", argValue.OutputPath));
+                    Console.ResetColor();
                 }
                 catch (Exception ex)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(string.Format("[Error] Unknown error occured.\tHResult:0x{0:X8}", ex.HResult));
+                    Console.WriteLine(string.Format("[Error]\tUnknown error occured.\tCode:0x{0:X8}", ex.HResult));
                     return;
                 }
-                finally {  Console.ResetColor(); }
+                finally
+                {
+                    Console.ResetColor();
+#if DEBUG
+                    Console.ReadKey();
+#endif
+                }
             }
             else
             {
@@ -211,11 +217,15 @@ namespace ImageTools
             Options options;
             try
             {
-                if (arguments[0] == "-?")
+                if (arguments.Length != 0)
                 {
-                    ShowError("");
-                    return null;
+                    if (arguments[0] == "-?")
+                    {
+                        ShowError("");
+                        return null;
+                    }
                 }
+                else throw new ArgumentException();
 
                 var result = (ParserResult<Options>)Parser.Default.ParseArguments<Options>(arguments);
                 if (arguments[0] == "--help" || arguments[0] == "--version")
@@ -227,10 +237,9 @@ namespace ImageTools
                 {
                     var parsed = (Parsed<Options>)result;
                     options = parsed.Value;
-                    Console.WriteLine(string.Format("Input:    {0}", options.InputPath));
-                    Console.WriteLine(string.Format("Output:   {0}", options.OutputPath));
-                    Console.WriteLine(string.Format("Size:     {0}", options.Size));
-                    Console.WriteLine(string.Format("SizeMode: {0}", options.Mode));
+                    Console.WriteLine(string.Format("Source:\t{0}", options.InputPath));
+                    Console.WriteLine(string.Format("Dest:\t{0}", options.OutputPath));
+                    Console.WriteLine(string.Format("Size:\t{0} {1}", options.Size, options.Mode));
                     Console.WriteLine();
                     return options;
                 }
@@ -239,17 +248,16 @@ namespace ImageTools
                     return null;
                 }
             }
-            catch (IndexOutOfRangeException)
+            catch (ArgumentException ex)
             {
                 var result = (ParserResult<Options>)Parser.Default.ParseArguments<Options>(arguments);
                 var parsed = (Parsed<Options>)result;
                 options = parsed.Value;
-                Console.WriteLine(string.Format("Source: {0}", options.InputPath));
-                Console.WriteLine(string.Format("Dest:   {0}", options.OutputPath));
-                Console.WriteLine(string.Format("Size:   {0}", options.Size));
-                Console.WriteLine(string.Format("Mode:   {0}", options.Mode));
+                Console.WriteLine(string.Format("Source:\t{0}", options.InputPath));
+                Console.WriteLine(string.Format("Dest:\t{0}", options.OutputPath));
+                Console.WriteLine(string.Format("Size:\t{0} {1}", options.Size, options.Mode));
                 Console.WriteLine();
-                // Console.WriteLine(string.Format("[Notice] No argument specified. Use default.\tHResult:0x{0:X8}", ex.HResult));
+                Console.WriteLine(string.Format("[info] There are no arguments.\tCode:0x{0:X8}", ex.HResult));
                 return options;
             }
         }
