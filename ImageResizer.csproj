@@ -57,7 +57,7 @@
     <ManifestKeyFile>ImageResizer_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Imgresizer.ico</ApplicationIcon>
+    <ApplicationIcon>Imgresizer_white.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CommandLine, Version=2.8.0.0, Culture=neutral, PublicKeyToken=5a870481e358d379, processorArchitecture=MSIL">
@@ -93,8 +93,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Imgresizer.ico" />
-    <Content Include="Imgresizer_GUI_icon.ico" />
+    <Content Include="Imgresizer_white.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
